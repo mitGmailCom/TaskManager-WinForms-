@@ -63,6 +63,12 @@
     <Compile Include="FormSetTimeProc.Designer.cs">
       <DependentUpon>FormSetTimeProc.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormSetTimeStopProc.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormSetTimeStopProc.Designer.cs">
+      <DependentUpon>FormSetTimeStopProc.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -70,6 +76,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormSetTimeProc.resx">
       <DependentUpon>FormSetTimeProc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormSetTimeStopProc.resx">
+      <DependentUpon>FormSetTimeStopProc.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

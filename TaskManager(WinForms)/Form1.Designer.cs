@@ -105,6 +105,7 @@
             this.stopProcessToolStripMenuItem.Name = "stopProcessToolStripMenuItem";
             this.stopProcessToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.stopProcessToolStripMenuItem.Text = "Stop Process";
+            this.stopProcessToolStripMenuItem.Click += new System.EventHandler(this.stopProcessToolStripMenuItem_Click);
             // 
             // formTaskManager
             // 

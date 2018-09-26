@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,8 +17,11 @@ namespace TaskManager_WinForms_
 {
     public partial class FormSetTimeProc : Form
     {
-        private string PathToFole { get; set; } = null; // path to application
+        private string PathToFile { get; set; } = null; // path to application
         private bool IsRunTask { get; set; } = false; // flag to Run or Stop process
+        StreamWriter sw; 
+        //private List<string> ListRunProcess = new List<string>();
+
         public FormSetTimeProc()
         {
             InitializeComponent();
@@ -38,14 +43,19 @@ namespace TaskManager_WinForms_
             set { IsRunTask = value; }
         }
 
+
+        /// <summary>
+        /// Handler for button Run process
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button1_Click(object sender, EventArgs e)
         {
             if (IsRunTask) // if IsRunTask == true => RunProc()
                 RunProc();
-            if (!IsRunTask) // if IsRunTask == false => StopProc()
-                StopProc();
             this.Close();
         }
+
         /// <summary>
         /// Find checked radiobutton and go to method StartProc with some parametr
         /// </summary>
@@ -62,11 +72,6 @@ namespace TaskManager_WinForms_
         }
 
 
-        private void StopProc()
-        {
-
-        }
-
         /// <summary>
         /// Start process
         /// </summary>
@@ -74,18 +79,79 @@ namespace TaskManager_WinForms_
         private void StartProc(string valueRadioBtn)
         {
             Trigger tr = null;
-            if (valueRadioBtn == "daily")
-                tr = ReturnDailyTr();
-            if (valueRadioBtn == "weekend")
-                tr = ReturnWeeklyTr();
-            if (valueRadioBtn == "month")
-                tr = ReturnMonthlyTr();
-            if (valueRadioBtn == "time")
-                tr = ReturnTimeTr();
-            string t = PathToFole.Substring(0, PathToFole.LastIndexOf('.'));
+            try
+            {
+                if (valueRadioBtn == "daily")
+                    tr = ReturnDailyTr();
+                if (valueRadioBtn == "weekend")
+                    tr = ReturnWeeklyTr();
+                if (valueRadioBtn == "month")
+                    tr = ReturnMonthlyTr();
+                if (valueRadioBtn == "time")
+                    tr = ReturnTimeTr();
+            }
+            catch(Exception ex)
+            {
+                sw = new StreamWriter(@"LogThreads.txt", true, Encoding.UTF8);
+                sw.WriteLineAsync(ex.Message);
+                if (sw != null)
+                    sw.Close();
+            }
             if (label5.Text != null || label5.Text != string.Empty)
-                TaskService.Instance.AddTask("NotePad", tr, new ExecAction(t, PathToFole, null));
+            {
+                try
+                {
+                    string tem = (PathToFile.Substring(PathToFile.LastIndexOf('\\') + 1));
+                    tem = tem.Substring(0, tem.LastIndexOf('.'));
+                    tem = tem[0].ToString().ToUpper() + tem.Substring(1,tem.Length - 1);
+                    TaskService.Instance.AddTask(tem, tr, new ExecAction(tem));
+                }
+                catch(Exception ex2)
+                {
+                    sw = new StreamWriter(@"LogThreads.txt", true, Encoding.UTF8);
+                    sw.WriteLineAsync(ex2.Message);
+                    if (sw != null)
+                        sw.Close();
+                }
+                #region Alternatively you can use TaskDefinition
+                //using (TaskService ts = new TaskService())
+                //{
+                //    TaskDefinition td = ts.NewTask();
+                //    td.RegistrationInfo.Description = "Run" + PathToFile.Substring(PathToFile.LastIndexOf('\\') + 1, PathToFile.LastIndexOf('.'));
+                //    td.Triggers.Add(tr);
+                //    td.Actions.Add(new ExecAction(t, PathToFile, null));
+                //    ts.RootFolder.RegisterTaskDefinition(PathToFile.Substring(PathToFile.LastIndexOf('\\') + 1, PathToFile.LastIndexOf('.')), td);
+                //    ts.RootFolder.DeleteTask(PathToFile.Substring(PathToFile.LastIndexOf('\\') + 1, PathToFile.LastIndexOf('.')));
+                //}
+                #endregion
+                WriteDataToLog(tr.StartBoundary);
+            }
         }
+
+        /// <summary>
+        /// Write data to file
+        /// </summary>
+        private void WriteDataToLog(DateTime date)
+        {
+            try
+            {
+                string temp1 = PathToFile.Substring(PathToFile.LastIndexOf('\\') + 1) + "Task in queque" + " " + DateTime.Now;
+                string temp2 = PathToFile.Substring(PathToFile.LastIndexOf('\\') + 1) + "Task run" + " " + date;
+                sw = new StreamWriter(@"LogThreads.txt", true, Encoding.UTF8);
+                sw.WriteLineAsync(temp1);
+                sw.WriteLineAsync(temp2);
+            }
+            catch(Exception ex)
+            {
+                sw.WriteLineAsync(ex.Message);
+            }
+            finally
+            {
+                if (sw != null)
+                    sw.Close();
+            }
+        }
+
 
         /// <summary>
         /// Create DailyTrigger
@@ -147,7 +213,7 @@ namespace TaskManager_WinForms_
         /// <param name="e"></param>
         private void btnSetProcess_Click(object sender, EventArgs e)
         {
-            CheckFileWitOpenD();
+            CheckFileWithOpenD();
             if (label5.Text != null || label5.Text != string.Empty)
                 btnSetTime.Enabled = true;
         }
@@ -155,15 +221,15 @@ namespace TaskManager_WinForms_
         /// <summary>
         /// Check File from OpenFileDialog
         /// </summary>
-        private void CheckFileWitOpenD()
+        private void CheckFileWithOpenD()
         {
             OpenFileDialog file = new OpenFileDialog();
             file.Title = "Check file";
             file.Filter = "Application |*.exe";
             if (file.ShowDialog() == DialogResult.OK)
             {
-                PathToFole = file.FileName;
-                label5.Text = PathToFole.Substring(PathToFole.LastIndexOf('\\')+1);
+                PathToFile = file.FileName;
+                label5.Text = PathToFile.Substring(PathToFile.LastIndexOf('\\')+1);
             }
         }
 
